@@ -177,13 +177,3 @@ python mqtt_subscriber.py
 Now start sending commands to the vocal assistant!
 
 ---
-
-
-# Security
-
-This example uses an unauthenticated broker (local network). For production, secure Mosquitto with TLS and authentication.
-
-
-# License
-
-This documentation describes a technical research-oriented project intended for local experimentation and personal automation.
