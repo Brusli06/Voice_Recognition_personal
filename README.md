@@ -1,8 +1,11 @@
-# Voice Recognition Personal Assistant — Technical Documentation
+# Voice Assistant for Home Automation
 
 This project implements a **fully local, wake‑word‑activated voice assistant** built in Python. It uses **Faster Whisper** for real‑time speech recognition and **RapidFuzz** for high‑accuracy fuzzy matching between transcribed commands and a list of command variants defined in a CSV file. The transcribed command is sent to a **Raspberry Pi 5** connected to the same network as the laptop, and it executes various actions by controlling the GPIO pins.
 
-The system is optimized for low latency, continuous audio streaming, robust wake‑word detection, and modular command handling. 
+This is an **uncompleted** version.  
+The completed version should add: 
+* migrating all processing inside the Raspberry, eliminating the need for an external laptop
+* dividing tasks for real-time execution 
 
 ---
 
