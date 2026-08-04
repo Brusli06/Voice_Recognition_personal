@@ -1,8 +1,11 @@
-# Voice Recognition Personal Assistant — Technical Documentation
+# Voice Assistant for Home Automation
 
 This project implements a **fully local, wake‑word‑activated voice assistant** built in Python. It uses **Faster Whisper** for real‑time speech recognition and **RapidFuzz** for high‑accuracy fuzzy matching between transcribed commands and a list of command variants defined in a CSV file. The transcribed command is sent to a **Raspberry Pi 5** connected to the same network as the laptop, and it executes various actions by controlling the GPIO pins.
 
-The system is optimized for low latency, continuous audio streaming, robust wake‑word detection, and modular command handling. 
+This is an **uncompleted** version.  
+The completed version should add: 
+* migrating all processing inside the Raspberry, eliminating the need for an external laptop
+* dividing tasks for real-time execution 
 
 ---
 
@@ -62,7 +65,7 @@ The audio system is built around:
 
 ---
 
-# 💤 Wake-Word Detection
+# Wake-Word Detection
 
 Wake‑word detection is performed by running Faster Whisper on a rolling 1.5–3 second buffer.
 
@@ -82,8 +85,11 @@ Wake‑word detection is performed by running Faster Whisper on a rolling 1.5–
 
 ```python
 def detect_wake_word(audio):
-    segments, _ = model.transcribe(audio, vad_filter=True)
-    text = " ".join(seg.text for seg in segments).lower()
+    segments, _ = model.transcribe(np.array(audio, dtype=np.float32),
+            language="en",
+            beam_size=1,
+            vad_filter=True,)
+    text = " ".join([seg.text for seg in segments if hasattr(seg, "text")]).lower()
     if WAKE_WORD in text:
         wake_detected = True
 ```
@@ -101,8 +107,8 @@ Once recording is active:
 ### Transcription
 
 ```python
-segments, _ = model.transcribe(audio, beam_size=3, vad_filter=True)
-text = " ".join(seg.text for seg in segments).lower()
+segments, _ = model.transcribe(audio, language="en", beam_size=3, vad_filter=True)
+text = " ".join([seg.text for seg in segments if hasattr(seg, "text")]).lower()
 ```
 
 Wake‑word is removed from the command if present:
@@ -139,7 +145,7 @@ var2act, variants = load_commands("commands.csv")
 ### Matching
 
 ```python
-result = process.extractOne(text, variants, score_cutoff=cutoff)
+result = find_best_match(text, var2act, var_vec, cutoff=70)
 ```
 
 * The best matching variant above `cutoff` (default 70%) is selected
@@ -174,13 +180,3 @@ python mqtt_subscriber.py
 Now start sending commands to the vocal assistant!
 
 ---
-
-
-# Security
-
-This example uses an unauthenticated broker (local network). For production, secure Mosquitto with TLS and authentication.
-
-
-# License
-
-This documentation describes a technical research-oriented project intended for local experimentation and personal automation.
