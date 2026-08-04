@@ -65,7 +65,7 @@ The audio system is built around:
 
 ---
 
-# 💤 Wake-Word Detection
+# Wake-Word Detection
 
 Wake‑word detection is performed by running Faster Whisper on a rolling 1.5–3 second buffer.
 
@@ -85,8 +85,11 @@ Wake‑word detection is performed by running Faster Whisper on a rolling 1.5–
 
 ```python
 def detect_wake_word(audio):
-    segments, _ = model.transcribe(audio, vad_filter=True)
-    text = " ".join(seg.text for seg in segments).lower()
+    segments, _ = model.transcribe(np.array(audio, dtype=np.float32),
+            language="en",
+            beam_size=1,
+            vad_filter=True,)
+    text = " ".join([seg.text for seg in segments if hasattr(seg, "text")]).lower()
     if WAKE_WORD in text:
         wake_detected = True
 ```
@@ -104,8 +107,8 @@ Once recording is active:
 ### Transcription
 
 ```python
-segments, _ = model.transcribe(audio, beam_size=3, vad_filter=True)
-text = " ".join(seg.text for seg in segments).lower()
+segments, _ = model.transcribe(audio, language="en", beam_size=3, vad_filter=True)
+text = " ".join([seg.text for seg in segments if hasattr(seg, "text")]).lower()
 ```
 
 Wake‑word is removed from the command if present:
@@ -142,7 +145,7 @@ var2act, variants = load_commands("commands.csv")
 ### Matching
 
 ```python
-result = process.extractOne(text, variants, score_cutoff=cutoff)
+result = find_best_match(text, var2act, var_vec, cutoff=70)
 ```
 
 * The best matching variant above `cutoff` (default 70%) is selected
